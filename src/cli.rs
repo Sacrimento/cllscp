@@ -1,28 +1,22 @@
-use crate::models::{slot::Slot, group::Group};
-
-use std::path::PathBuf;
+use crate::models::{group::Group, slot::Slot};
+use csv;
 
 use clap::Parser;
+use serde::de::DeserializeOwned;
 
-fn validate_file(file: &str) -> Result<PathBuf, String> {
-    let path = PathBuf::from(file);
-
-    if !path.exists() {
-        return Err(format!("'{}' unknown file", file));
-    } else if path.is_dir() {
-        return Err(format!("'{}' is a directory", file));
-    }
-
-    Ok(path)
+fn parse_csv<T: DeserializeOwned>(fpath: &str) -> Result<Vec<T>, csv::Error> {
+    Ok(csv::Reader::from_path(fpath)?
+        .deserialize()
+        .collect::<Result<Vec<T>, _>>()?)
 }
 
 #[derive(Parser, Debug)]
 pub struct Cli {
-    #[arg(short, long, value_name = "JSON FILE", value_parser = validate_file)]
-    groups: PathBuf,
+    #[arg(short, long, value_name = "CSV FILE", value_parser = parse_csv::<Group>)]
+    groups: std::vec::Vec<Group>,
 
-    #[arg(short, long, value_name = "JSON FILE", value_parser = validate_file)]
-    slots: PathBuf,
+    #[arg(short, long, value_name = "CSV FILE", value_parser = parse_csv::<Slot>)]
+    slots: std::vec::Vec<Slot>,
 
     #[arg(short, long, default_value_t = 21)]
     weeks: usize,

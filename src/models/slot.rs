@@ -1,3 +1,6 @@
+use serde::Deserialize;
+
+#[derive(Debug, Clone, Deserialize)]
 pub struct Slot {
     pub id: usize,
     pub subject: String,
